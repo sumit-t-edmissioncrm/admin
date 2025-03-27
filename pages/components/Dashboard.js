@@ -12,6 +12,11 @@ import {
   Cell,
   LineChart,
   Line,
+  AreaChart,
+  Area,
+  CartesianGrid,
+  Legend,
+  ComposedChart,
 } from "recharts";
 
 export default function Dashboard() {
@@ -20,7 +25,8 @@ export default function Dashboard() {
   const [totalOrders, setTotalOrders] = useState(0);
   const [productSales, setProductSales] = useState([]);
   const [filteredRevenue, setFilteredRevenue] = useState([]);
-  const [filter, setFilter] = useState("monthly");
+  const [filter, setFilter] = useState("daily");
+  const [chartType, setChartType] = useState("line");
 
   useEffect(() => {
     async function fetchData() {
@@ -85,6 +91,57 @@ export default function Dashboard() {
 
   const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042"];
 
+  // Function to render the appropriate chart based on chartType
+  const renderRevenueChart = () => {
+    switch(chartType) {
+      case 'bar':
+        return (
+          <BarChart data={filteredRevenue}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="total" fill="#8884d8" name="Revenue" />
+          </BarChart>
+        );
+      case 'area':
+        return (
+          <AreaChart data={filteredRevenue}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Area type="monotone" dataKey="total" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} name="Revenue" />
+          </AreaChart>
+        );
+      case 'composed':
+        return (
+          <ComposedChart data={filteredRevenue}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="total" fill="#8884d8" name="Revenue" />
+            <Line type="monotone" dataKey="total" stroke="#ff7300" name="Trend" />
+          </ComposedChart>
+        );
+      default: // line chart
+        return (
+          <LineChart data={filteredRevenue}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="total" stroke="#82ca9d" name="Revenue" />
+          </LineChart>
+        );
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -139,39 +196,71 @@ export default function Dashboard() {
 
       <div className="bg-white p-4 rounded-lg shadow-md mt-6">
         <h2 className="text-xl font-semibold mb-4">Revenue Trend</h2>
-        <div className="flex gap-4 mb-4">
-          <button
-            onClick={() => setFilter("daily")}
-            className={`px-4 py-2 rounded ${
-              filter === "daily" ? "bg-blue-500 text-white" : "bg-gray-200"
-            }`}
-          >
-            Daily
-          </button>
-          <button
-            onClick={() => setFilter("weekly")}
-            className={`px-4 py-2 rounded ${
-              filter === "weekly" ? "bg-blue-500 text-white" : "bg-gray-200"
-            }`}
-          >
-            Weekly
-          </button>
-          <button
-            onClick={() => setFilter("monthly")}
-            className={`px-4 py-2 rounded ${
-              filter === "monthly" ? "bg-blue-500 text-white" : "bg-gray-200"
-            }`}
-          >
-            Monthly
-          </button>
+        <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-4 mb-4">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFilter("daily")}
+              className={`px-4 py-2 rounded ${
+                filter === "daily" ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              Daily
+            </button>
+            <button
+              onClick={() => setFilter("weekly")}
+              className={`px-4 py-2 rounded ${
+                filter === "weekly" ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              Weekly
+            </button>
+            <button
+              onClick={() => setFilter("monthly")}
+              className={`px-4 py-2 rounded ${
+                filter === "monthly" ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              Monthly
+            </button>
+          </div>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => setChartType("line")}
+              className={`px-4 py-2 rounded ${
+                chartType === "line" ? "bg-indigo-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              Line
+            </button>
+            <button
+              onClick={() => setChartType("bar")}
+              className={`px-4 py-2 rounded ${
+                chartType === "bar" ? "bg-indigo-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              Bar
+            </button>
+            <button
+              onClick={() => setChartType("area")}
+              className={`px-4 py-2 rounded ${
+                chartType === "area" ? "bg-indigo-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              Area
+            </button>
+            <button
+              onClick={() => setChartType("composed")}
+              className={`px-4 py-2 rounded ${
+                chartType === "composed" ? "bg-indigo-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              Combo
+            </button>
+          </div>
         </div>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={filteredRevenue}>
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="total" stroke="#82ca9d" />
-          </LineChart>
+          {renderRevenueChart()}
         </ResponsiveContainer>
       </div>
     </div>
